@@ -1,0 +1,14 @@
+{
+  "name": "@eyevinn/hls-repeat",
+  "version": "0.1.0",
+  "description": "NPM library to loop an HLS VOD manifest into a new VOD manifest",
+  "main": "index.js",
+  "scripts": {
+    "test": "$(npm bin)/jasmine"
+  },
+  "author": "Eyevinn Technology <work@eyevinn.se>",
+  "license": "MIT",
+  "devDependencies": {
+    "jasmine": "^3.5.0"
+  }
+}
