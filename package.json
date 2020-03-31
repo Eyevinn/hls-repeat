@@ -10,5 +10,9 @@
   "license": "MIT",
   "devDependencies": {
     "jasmine": "^3.5.0"
+  },
+  "dependencies": {
+    "@eyevinn/m3u8": "^0.1.1",
+    "node-fetch": "^2.6.0"
   }
 }
