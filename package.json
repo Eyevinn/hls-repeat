@@ -1,6 +1,6 @@
 {
   "name": "@eyevinn/hls-repeat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NPM library to loop an HLS VOD manifest into a new VOD manifest",
   "main": "index.js",
   "scripts": {
