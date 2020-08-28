@@ -33,6 +33,9 @@ class HLSRepeatVod {
         .then(resolve)
         .catch(reject);
       });
+      parser.on('error', (err) => {
+        reject("Failed to parse M3U8: " + err);
+      });
       if (!_injectMasterManifest) {
         fetch(this.masterManifestUri)
         .then(res => {
@@ -71,7 +74,9 @@ class HLSRepeatVod {
         }
         resolve();
       });
-
+      parser.on('error', (err) => {
+        reject("Failed to parse M3U8: " + err);
+      });
       if (!_injectMediaManifest) {
         fetch(mediaManifestUri)
         .then(res => {
