@@ -1,6 +1,7 @@
 const m3u8 = require('@eyevinn/m3u8');
 const url = require('url');
 const fetch = require('node-fetch');
+const { ConsoleReporter } = require('jasmine');
 
 class HLSRepeatVod {
   constructor(vodManifestUri, repetitions, options) {
@@ -8,6 +9,7 @@ class HLSRepeatVod {
     this.playlists = {};
     this.repetitions = repetitions;
     this.bandwiths = [];
+    this.audioSegments = {};
   }
 
   load(_injectMasterManifest, _injectMediaManifest, _injectAudioManifest) {
@@ -24,25 +26,21 @@ class HLSRepeatVod {
           baseUrl = m[1] + '/';
         }
 
-        this.audioGroups = {};
+        let audioGroups = {};
         for (let i = 0; i < m3u.items.StreamItem.length; i++) {
           const streamItem = m3u.items.StreamItem[i];
           this.bandwiths.push(streamItem.get('bandwidth'));
 
           const mediaManifestUrl = url.resolve(baseUrl, streamItem.get('uri'));
           if (!m3u.items.MediaItem.find((mediaItem) => mediaItem.get("type") === "AUDIO" && mediaItem.get("uri") == streamItem.get("uri"))) {
-            if (streamItem.get("codecs") !== "mp4a.40.2") {
-              mediaManifestPromises.push(this._loadMediaManifest(mediaManifestUrl, streamItem.get("bandwidth"), _injectMediaManifest));
-            }
+            mediaManifestPromises.push(this._loadMediaManifest(mediaManifestUrl, streamItem.get("bandwidth"), _injectMediaManifest));
           }
-
+          
           if (streamItem.attributes.attributes["audio"]) {
             let audioGroupId = streamItem.attributes.attributes["audio"];
             if (!this.audioSegments[audioGroupId]) {
               this.audioSegments[audioGroupId] = {};
             }
-            debug(`Lookup media item for '${audioGroupId}'`);
-
 
             let audioGroupItems = m3u.items.MediaItem.filter((item) => {
               return item.attributes.attributes.type === "AUDIO" && item.attributes.attributes["group-id"] === audioGroupId;
@@ -67,7 +65,7 @@ class HLSRepeatVod {
             // # For each lang, find the lang playlist uri and do _loadAudioManifest() on it.
             for (let j = 0; j < audioLanguages.length; j++) {
               let audioLang = audioLanguages[j];
-              let audioUri = audioGroupItems[j].attributes.attributes.uri;
+              let audioUri = audioGroupItems[j].attributes.attributes.uri
               if (!audioUri) {
                 //# if mediaItems dont have uris
                 let audioVariant = m3u.items.StreamItem.find((item) => {
@@ -87,11 +85,7 @@ class HLSRepeatVod {
                 if (!audioGroups[audioGroupId][audioLang]) {
                   audioGroups[audioGroupId][audioLang] = true;
                   audioManifestPromises.push(this._loadAudioManifest(audioManifestUrl, audioGroupId, audioLang, _injectAudioManifest));
-                } else {
-                  debug(`Audio manifest for language "${audioLang}" from '${audioGroupId}' in already loaded, skipping`);
                 }
-              } else {
-                debug(`No media item for '${audioGroupId}' in "${audioLang}" was found, skipping`);
               }
             }
           }
@@ -99,7 +93,7 @@ class HLSRepeatVod {
         
         
         }
-        Promise.all(mediaManifestPromises)
+        Promise.all(mediaManifestPromises.concat(audioManifestPromises))
         .then(resolve)
         .catch(reject);
       });
@@ -126,8 +120,8 @@ class HLSRepeatVod {
     return this.playlists[bw].toString();
   }
 
-  getAudioManifest(bw) {
-    return this.playlists[bw].toString();
+  getAudioManifest(audioGroupId, lang) {
+    return this.audioSegments[audioGroupId][lang].toString();
   }
 
   _loadMediaManifest(mediaManifestUri, bandwidth, _injectMediaManifest) {
@@ -168,15 +162,15 @@ class HLSRepeatVod {
       const parser = m3u8.createStream();
 
       parser.on('m3u', m3u => {
-        if (!this.playlists[audioGroupId][audioLang]) {
-          this.playlists[audioGroupId] = m3u;
+        if (!this.audioSegments[audioGroupId][audioLang].length) {
+          this.audioSegments[audioGroupId][audioLang] = m3u;
         }
 
-        let playlistItems = this.playlists[audioGroupId][audioLang].items.PlaylistItem;
+        let playlistItems = this.audioSegments[audioGroupId][audioLang].items.PlaylistItem;
         playlistItems[0].set('discontinuity', true);
         let repetition = 0;
         while (repetition < this.repetitions - 1) {
-          this.playlists[audioGroupId][audioLang].items.PlaylistItem = this.playlists[audioGroupId][audioLang].items.PlaylistItem.concat(playlistItems);
+          this.audioSegments[audioGroupId][audioLang].items.PlaylistItem = this.audioSegments[audioGroupId][audioLang].items.PlaylistItem.concat(playlistItems);
           repetition++;
         }
         resolve();

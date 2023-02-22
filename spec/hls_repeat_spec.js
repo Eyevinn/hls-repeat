@@ -19,7 +19,7 @@ describe("HLSRepeatVod", () => {
     };
   });
 
-  it("can create a 9 seconds long HLS by repeating a 3 sec HLS three times", done => {
+  it("can create a audio manifest", done => {
     const mockVod = new HLSRepeatVod('http://mock.com/mock.m3u8', 3, {});
 
     // An example on how it can be initiated from a string instead of URL
@@ -40,6 +40,38 @@ describe("HLSRepeatVod", () => {
         expect(lines[13]).toEqual('#EXT-X-DISCONTINUITY');
         expect(lines[15].match(/segment1_\d+_av.ts/)).not.toBeNull();
       });
+      done();
+    });
+  });
+
+  it("can create a 9 seconds long HLS by repeating a 3 sec HLS three times", done => {
+    const mockVod = new HLSRepeatVod('http://mock.com/mock.m3u8', 3, {});
+
+    // An example on how it can be initiated from a string instead of URL
+    const masterManifest = fs.readFileSync('testvectors/hls_demuxed/master.m3u8', 'utf8');
+    const mediaManifest = fs.readFileSync('testvectors/hls_demuxed/8850073.m3u8', 'utf8');
+    const audioManifest = fs.readFileSync('testvectors/hls_demuxed/aac-en.m3u8', 'utf8');
+    let masterManifestStream = new Readable();
+    masterManifestStream.push(masterManifest);
+    masterManifestStream.push(null);
+
+    let mediaManifestStream = new Readable();
+    mediaManifestStream.push(mediaManifest);
+    mediaManifestStream.push(null);
+
+    let audioManifestStream = new Readable();
+    audioManifestStream.push(audioManifest);
+    audioManifestStream.push(null);
+
+    mockVod.load(() => { return masterManifestStream }, () => { return mediaManifestStream }, () => { return audioManifestStream })
+    .then(() => {
+        const manifest = mockVod.getAudioManifest("aac","en");
+        const lines = manifest.split("\n");
+        expect(lines[12].match(/seg_en_\d+.ts/)).not.toBeNull();
+        expect(lines[13]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[18].match(/seg_en_\d+.ts/)).not.toBeNull();
+        expect(lines[19]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[24].match(/seg_en_\d+.ts/)).not.toBeNull();
       done();
     });
   });
