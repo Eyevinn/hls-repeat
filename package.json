@@ -4,7 +4,7 @@
   "description": "NPM library to loop an HLS VOD manifest into a new VOD manifest",
   "main": "index.js",
   "scripts": {
-    "test": "$(npm bin)/jasmine",
+    "test": "jasmine",
     "postversion": "git push && git push --tags",
     "coverage": "nyc npm test && nyc report",
     "coveralls": "nyc npm test && nyc report --reporter=text-lcov | coveralls"
