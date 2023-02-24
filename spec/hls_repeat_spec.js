@@ -67,11 +67,11 @@ describe("HLSRepeatVod", () => {
     .then(() => {
         const manifest = mockVod.getAudioManifest("aac","en");
         const lines = manifest.split("\n");
-        expect(lines[56].match(/seg_en_\d+.ts/)).not.toBeNull();
-        expect(lines[57]).toEqual('#EXT-X-DISCONTINUITY');
-        expect(lines[106].match(/seg_en_\d+.ts/)).not.toBeNull();
-        expect(lines[107]).toEqual('#EXT-X-DISCONTINUITY');
-        expect(lines[156].match(/seg_en_\d+.ts/)).not.toBeNull();
+        expect(lines[76].match(/seg_en_\d+.ts/)).not.toBeNull();
+        expect(lines[77]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[147].match(/seg_en_\d+.ts/)).not.toBeNull();
+        expect(lines[148]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[218].match(/seg_en_\d+.ts/)).not.toBeNull();
       done();
     });
   });
@@ -97,8 +97,6 @@ describe("HLSRepeatVod", () => {
     masterManifestStream.push(masterManifest);
     masterManifestStream.push(null);
 
-    
-
     let audioManifestStream = new Readable();
     audioManifestStream.push(audioManifest);
     audioManifestStream.push(null);
@@ -107,11 +105,14 @@ describe("HLSRepeatVod", () => {
     .then(() => {
         const manifest = mockVod.getAudioManifest("audio-aacl-128","Svenska");
         const lines = manifest.split("\n");
+        //lines.map((i,o) => console.log(i,o))
         expect(lines[27].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
-        expect(lines[28]).toEqual('#EXT-X-DISCONTINUITY');
-        expect(lines[46].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
-        expect(lines[47]).toEqual('#EXT-X-DISCONTINUITY');
-        expect(lines[65].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
+        expect(lines[28].match("#EXT-X-MAP:URI")).not.toBeNull();
+        expect(lines[29]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[47].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
+        expect(lines[28].match("#EXT-X-MAP:URI")).not.toBeNull();
+        expect(lines[49]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[67].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
       done();
     });
   });
