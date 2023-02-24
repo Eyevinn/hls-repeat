@@ -69,8 +69,12 @@ describe("HLSRepeatVod", () => {
         const lines = manifest.split("\n");
         expect(lines[76].match(/seg_en_\d+.ts/)).not.toBeNull();
         expect(lines[77]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[78].match("#EXT-X-CUE-OUT:DURATION=15.120000000000001")).not.toBeNull();
+        expect(lines[84].match("#EXT-X-CUE-IN")).not.toBeNull();
         expect(lines[147].match(/seg_en_\d+.ts/)).not.toBeNull();
         expect(lines[148]).toEqual('#EXT-X-DISCONTINUITY');
+        expect(lines[149].match("#EXT-X-CUE-OUT:DURATION=15.120000000000001")).not.toBeNull();
+        expect(lines[155].match("#EXT-X-CUE-IN")).not.toBeNull();
         expect(lines[218].match(/seg_en_\d+.ts/)).not.toBeNull();
       done();
     });
@@ -105,12 +109,11 @@ describe("HLSRepeatVod", () => {
     .then(() => {
         const manifest = mockVod.getAudioManifest("audio-aacl-128","Svenska");
         const lines = manifest.split("\n");
-        //lines.map((i,o) => console.log(i,o))
         expect(lines[27].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
-        expect(lines[28].match("#EXT-X-MAP:URI")).not.toBeNull();
+        expect(lines[28].match(`#EXT-X-MAP:URI="https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000.m4s"`)).not.toBeNull();
         expect(lines[29]).toEqual('#EXT-X-DISCONTINUITY');
         expect(lines[47].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
-        expect(lines[28].match("#EXT-X-MAP:URI")).not.toBeNull();
+        expect(lines[28].match(`#EXT-X-MAP:URI="https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000.m4s"`)).not.toBeNull();
         expect(lines[49]).toEqual('#EXT-X-DISCONTINUITY');
         expect(lines[67].match("hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-audio=128000-104")).not.toBeNull();
       done();

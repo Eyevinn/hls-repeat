@@ -1,7 +1,6 @@
 const m3u8 = require('@eyevinn/m3u8');
 const url = require('url');
 const fetch = require('node-fetch');
-const { ConsoleReporter } = require('jasmine');
 
 class HLSRepeatVod {
   constructor(vodManifestUri, repetitions, options) {
