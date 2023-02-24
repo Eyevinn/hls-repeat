@@ -1,0 +1,22 @@
+#EXTM3U
+#EXT-X-VERSION:6
+## Created with Unified Streaming Platform (version=1.11.20-26889)
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXT-X-MEDIA-SEQUENCE:1
+#EXT-X-INDEPENDENT-SEGMENTS
+#EXT-X-TARGETDURATION:3
+#USP-X-TIMESTAMP-MAP:MPEGTS=900000,LOCAL=1970-01-01T00:00:00Z
+#EXT-X-MAP:URI="https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000.m4s"
+#EXTINF:3, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-62.m4s
+#EXTINF:3, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-63.m4s
+#EXTINF:3, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-64.m4s
+#EXTINF:3, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-65.m4s
+#EXTINF:3, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-66.m4s
+#EXTINF:1.36, no desc
+https://vod.streaming.a2d.tv/a07ff4eb-6770-4805-a0ad-a4d1b127880d/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478.ism/hls/4fef8b00-6d0b-11ed-89b6-2b1a288899a0_20356478-video=3500000-67.m4s
+#EXT-X-ENDLIST

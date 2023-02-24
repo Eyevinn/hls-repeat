@@ -20,13 +20,14 @@ class HLSRepeatVod {
         this.m3u = m3u;
         let mediaManifestPromises = [];
         let audioManifestPromises = [];
+        let audioGroups = {};
         let baseUrl;
         const m = this.masterManifestUri.match(/^(.*)\/.*?$/);
         if (m) {
           baseUrl = m[1] + '/';
         }
 
-        let audioGroups = {};
+
         for (let i = 0; i < m3u.items.StreamItem.length; i++) {
           const streamItem = m3u.items.StreamItem[i];
           this.bandwiths.push(streamItem.get('bandwidth'));
@@ -35,7 +36,7 @@ class HLSRepeatVod {
           if (!m3u.items.MediaItem.find((mediaItem) => mediaItem.get("type") === "AUDIO" && mediaItem.get("uri") == streamItem.get("uri"))) {
             mediaManifestPromises.push(this._loadMediaManifest(mediaManifestUrl, streamItem.get("bandwidth"), _injectMediaManifest));
           }
-          
+
           if (streamItem.attributes.attributes["audio"]) {
             let audioGroupId = streamItem.attributes.attributes["audio"];
             if (!this.audioSegments[audioGroupId]) {
@@ -89,27 +90,24 @@ class HLSRepeatVod {
               }
             }
           }
-        
-        
-        
         }
         Promise.all(mediaManifestPromises.concat(audioManifestPromises))
-        .then(resolve)
-        .catch(reject);
+          .then(resolve)
+          .catch(reject);
       });
       parser.on('error', (err) => {
         reject("Failed to parse M3U8: " + err);
       });
       if (!_injectMasterManifest) {
         fetch(this.masterManifestUri)
-        .then(res => {
-          res.body.pipe(parser);
-        })
-        .catch(reject);
+          .then(res => {
+            res.body.pipe(parser);
+          })
+          .catch(reject);
       } else {
         _injectMasterManifest().pipe(parser);
       }
-    });  
+    });
   }
 
   getBandwidths() {
@@ -121,6 +119,18 @@ class HLSRepeatVod {
   }
 
   getAudioManifest(audioGroupId, lang) {
+    if (!this.audioSegments[audioGroupId]) {
+      const keygroup = Object.keys(this.audioSegments)
+      const audioSegementsGroup = this.audioSegments[keygroup[0]]
+      if (!audioSegementsGroup[lang]) {
+        const keylang = Object.keys(audioSegementsGroup)
+        return audioSegementsGroup[keylang[0]].toString();
+      }
+      return audioSegementsGroup[lang].toString();
+    } else if (!this.audioSegments[audioGroupId][lang]) {
+      const keylang = Object.keys(this.audioSegments[audioGroupId])
+      return this.audioSegments[audioGroupId][keylang[0]].toString();
+    }
     return this.audioSegments[audioGroupId][lang].toString();
   }
 
@@ -147,10 +157,10 @@ class HLSRepeatVod {
       });
       if (!_injectMediaManifest) {
         fetch(mediaManifestUri)
-        .then(res => {
-          res.body.pipe(parser);
-        })
-        .catch(reject);
+          .then(res => {
+            res.body.pipe(parser);
+          })
+          .catch(reject);
       } else {
         _injectMediaManifest(bandwidth).pipe(parser);
       }
@@ -180,10 +190,10 @@ class HLSRepeatVod {
       });
       if (!_injectAudioManifest) {
         fetch(audioManifestUri)
-        .then(res => {
-          res.body.pipe(parser);
-        })
-        .catch(reject);
+          .then(res => {
+            res.body.pipe(parser);
+          })
+          .catch(reject);
       } else {
         _injectAudioManifest(audioGroupId, audioLang).pipe(parser);
       }
