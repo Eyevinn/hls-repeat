@@ -132,4 +132,76 @@ describe("HLSRepeatVod", () => {
       done();
     });
   });
+
+  it("can create a combined video, audio and subtitle manifest", done => {
+    const mockVod = new HLSRepeatVod('http://mock.com/mock.m3u8', 3, {});
+
+    // Load all test files
+    const masterManifest = fs.readFileSync('testvectors/hls_demuxed_subs/master.m3u8', 'utf8');
+    const mediaManifest = fs.readFileSync('testvectors/hls_demuxed_subs/8850073.m3u8', 'utf8');
+    const audioManifest = fs.readFileSync('testvectors/hls_demuxed_subs/aac-en.m3u8', 'utf8');
+    const subtitleManifest = fs.readFileSync('testvectors/hls_demuxed_subs/text-en.m3u8', 'utf8');
+    
+    // Create streams for each manifest
+    let masterManifestStream = new Readable();
+    masterManifestStream.push(masterManifest);
+    masterManifestStream.push(null);
+
+    let mediaManifestStream = new Readable();
+    mediaManifestStream.push(mediaManifest);
+    mediaManifestStream.push(null);
+
+    let audioManifestStream = new Readable();
+    audioManifestStream.push(audioManifest);
+    audioManifestStream.push(null);
+
+    let subtitleManifestStream = new Readable();
+    subtitleManifestStream.push(subtitleManifest);
+    subtitleManifestStream.push(null);
+
+    // Load all manifests
+    mockVod.load(
+      () => { return masterManifestStream }, 
+      () => { return mediaManifestStream }, 
+      () => { return audioManifestStream },
+      () => { return subtitleManifestStream }
+    )
+    .then(() => {
+      // Test video manifest
+      const videoManifest = mockVod.getMediaManifest(8850073);
+      const videoLines = videoManifest.split("\n");
+      expect(videoLines.some(line => line.match(/\.ts/))).toBeTruthy();
+      expect(videoLines.some(line => line === '#EXT-X-DISCONTINUITY')).toBeTruthy();
+      
+      // Test audio manifest
+      const audioManifest = mockVod.getAudioManifest("aac", "en");
+      const audioLines = audioManifest.split("\n");
+      expect(audioLines.some(line => line.match(/audio\/seg_en_\d+\.ts/))).toBeTruthy();
+      expect(audioLines.some(line => line === '#EXT-X-DISCONTINUITY')).toBeTruthy();
+      
+      // Test subtitle manifest
+      const subtitleManifest = mockVod.getSubtitleManifest("text", "en");
+      const subtitleLines = subtitleManifest.split("\n");
+      expect(subtitleLines.some(line => line.match(/text\/seg_\d+\.vtt/))).toBeTruthy();
+      expect(subtitleLines.some(line => line === '#EXT-X-DISCONTINUITY')).toBeTruthy();
+      
+      // Verify all manifests have the correct number of segments (original * repetitions)
+      // Count segments in video manifest
+      const videoSegmentCount = videoLines.filter(line => line.match(/\.ts/)).length;
+      const originalVideoSegmentCount = videoSegmentCount / mockVod.repetitions;
+      expect(videoSegmentCount).toEqual(originalVideoSegmentCount * mockVod.repetitions);
+      
+      // Count segments in audio manifest
+      const audioSegmentCount = audioLines.filter(line => line.match(/audio\/seg_en_\d+\.ts/)).length;
+      const originalAudioSegmentCount = audioSegmentCount / mockVod.repetitions;
+      expect(audioSegmentCount).toEqual(originalAudioSegmentCount * mockVod.repetitions);
+      
+      // Count segments in subtitle manifest
+      const subtitleSegmentCount = subtitleLines.filter(line => line.match(/text\/seg_\d+\.vtt/)).length;
+      const originalSubtitleSegmentCount = subtitleSegmentCount / mockVod.repetitions;
+      expect(subtitleSegmentCount).toEqual(originalSubtitleSegmentCount * mockVod.repetitions);
+      
+      done();
+    });
+  });
 });
