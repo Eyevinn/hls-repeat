@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Coverage Status](https://coveralls.io/repos/github/Eyevinn/hls-repeat/badge.svg?branch=master)](https://coveralls.io/github/Eyevinn/hls-repeat?branch=master) [![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
 
-Node library to create an HLS by repeating the content of an HLS VOD.
+Node library to create an HLS by repeating the content of an HLS VOD. Supports video, audio, and subtitle tracks.
 
 ## Installation
 
@@ -14,14 +14,40 @@ npm install --save @eyevinn/hls-repeat
 
 The code below shows an example on how an HLS VOD of three seconds can be repeated into a new VOD of 9 seconds.
 
-```
+```javascript
 const hlsVod = new HLSRepeatVod('http://testcontent.eyevinn.technology/slates/ottera/playlist.m3u8', 3);
 hlsVod.load()
 .then(() => {
+  // Get video manifest
   const mediaManifest = hlsVod.getMediaManifest(4928000);
   console.log(mediaManifest);
+  
+  // If the source has audio tracks
+  const audioManifest = hlsVod.getAudioManifest("aac", "en");
+  console.log(audioManifest);
+  
+  // If the source has subtitle tracks
+  const subtitleManifest = hlsVod.getSubtitleManifest("text", "en");
+  console.log(subtitleManifest);
 });
 ```
+
+### Demuxed Content Support
+
+The library supports demuxed HLS content with separate audio and subtitle tracks:
+
+- **Video**: Main video tracks with different bandwidths
+- **Audio**: Multiple audio tracks with different languages
+- **Subtitles**: Multiple subtitle tracks with different languages
+
+For each type of track, the library will:
+1. Parse the master manifest to identify all tracks
+2. Load each track's manifest
+3. Repeat the segments according to the specified repetition count
+4. Add discontinuity markers between repetitions
+5. Provide methods to access the repeated manifests
+
+## How It Works
 
 What this library does can be illustrated by this simplified example below.
 
@@ -61,6 +87,8 @@ segment1_0_av.ts
 segment1_0_av.ts
 #EXT-X-ENDLIST
 ```
+
+The same process is applied to audio and subtitle tracks, ensuring all tracks are repeated the same number of times with proper discontinuity markers.
 
 # Authors
 
