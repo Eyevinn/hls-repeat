@@ -1,8 +1,8 @@
 # hls-repeat
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Coverage Status](https://coveralls.io/repos/github/Eyevinn/hls-repeat/badge.svg?branch=master)](https://coveralls.io/github/Eyevinn/hls-repeat?branch=master) [![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![npm](https://img.shields.io/npm/v/@eyevinn/hls-repeat)](https://www.npmjs.com/package/@eyevinn/hls-repeat) [![Coverage Status](https://coveralls.io/repos/github/Eyevinn/hls-repeat/badge.svg?branch=master)](https://coveralls.io/github/Eyevinn/hls-repeat?branch=master) [![Slack](http://slack.streamingtech.se/badge.svg)](http://slack.streamingtech.se)
 
-Node library to create an HLS by repeating the content of an HLS VOD. Supports video, audio, and subtitle tracks.
+Node library to create an HLS VOD by repeating the content of an existing HLS VOD. Supports video, audio, and subtitle tracks.
 
 ## Installation
 
@@ -10,71 +10,84 @@ Node library to create an HLS by repeating the content of an HLS VOD. Supports v
 npm install --save @eyevinn/hls-repeat
 ```
 
+Requires Node >= 20.
+
 ## Usage
 
-The code below shows an example on how an HLS VOD of three seconds can be repeated into a new VOD of 9 seconds.
-
 ```javascript
-const hlsVod = new HLSRepeatVod('http://testcontent.eyevinn.technology/slates/ottera/playlist.m3u8', 3);
-hlsVod.load()
-.then(() => {
-  // Get video manifest
-  const mediaManifest = hlsVod.getMediaManifest(4928000);
+const HLSRepeatVod = require('@eyevinn/hls-repeat');
+
+const hlsVod = new HLSRepeatVod('https://example.com/vod/playlist.m3u8', 3);
+hlsVod.load().then(() => {
+  const bandwidths = hlsVod.getBandwidths();
+
+  // Get video manifest for a specific bandwidth
+  const mediaManifest = hlsVod.getMediaManifest(bandwidths[0]);
   console.log(mediaManifest);
-  
-  // If the source has audio tracks
-  const audioManifest = hlsVod.getAudioManifest("aac", "en");
+
+  // Get audio manifest (if the source has audio tracks)
+  const audioManifest = hlsVod.getAudioManifest('aac', 'en');
   console.log(audioManifest);
-  
-  // If the source has subtitle tracks
-  const subtitleManifest = hlsVod.getSubtitleManifest("text", "en");
+
+  // Get subtitle manifest (if the source has subtitle tracks)
+  const subtitleManifest = hlsVod.getSubtitleManifest('text', 'en');
   console.log(subtitleManifest);
 });
 ```
 
-### Demuxed Content Support
+## API
 
-The library supports demuxed HLS content with separate audio and subtitle tracks:
+### `new HLSRepeatVod(masterManifestUri, repetitions)`
 
-- **Video**: Main video tracks with different bandwidths
-- **Audio**: Multiple audio tracks with different languages
-- **Subtitles**: Multiple subtitle tracks with different languages
+| Parameter | Type | Description |
+|---|---|---|
+| `masterManifestUri` | `string` | URL to the HLS master manifest |
+| `repetitions` | `number` | Number of times to repeat the content |
 
-For each type of track, the library will:
-1. Parse the master manifest to identify all tracks
-2. Load each track's manifest
-3. Repeat the segments according to the specified repetition count
-4. Add discontinuity markers between repetitions
-5. Provide methods to access the repeated manifests
+### `load()` → `Promise<void>`
+
+Fetches and parses the master manifest and all media/audio/subtitle playlists, then repeats the segments.
+
+### `getBandwidths()` → `number[]`
+
+Returns the list of bandwidths found in the master manifest.
+
+### `getMediaManifest(bandwidth)` → `string`
+
+Returns the repeated video media playlist for the given bandwidth.
+
+### `getAudioManifest(audioGroupId, language)` → `string`
+
+Returns the repeated audio playlist for the given group ID and language. Falls back to the first available group/language if no exact match is found.
+
+### `getSubtitleManifest(subtitleGroupId, language)` → `string | null`
+
+Returns the repeated subtitle playlist for the given group ID and language. Falls back to the first available group/language if no exact match is found. Returns `null` if no subtitle tracks exist.
 
 ## How It Works
 
-What this library does can be illustrated by this simplified example below.
+The library parses the HLS master manifest, loads each variant/track playlist, and concatenates the segment list the specified number of times. A `#EXT-X-DISCONTINUITY` tag is inserted between each repetition.
 
-Consider the following:
+For example, a single-segment VOD repeated 3 times:
 
+**Input:**
 ```
 #EXTM3U
 #EXT-X-TARGETDURATION:3
-#EXT-X-ALLOW-CACHE:YES
 #EXT-X-PLAYLIST-TYPE:VOD
 #EXT-X-VERSION:3
-#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-MEDIA-SEQUENCE:1
 #EXTINF:3.000,
 segment1_0_av.ts
 #EXT-X-ENDLIST
 ```
 
-and with this library we can generate a new VOD by repeating this for example three times. This will result in:
-
+**Output:**
 ```
 #EXTM3U
 #EXT-X-TARGETDURATION:3
-#EXT-X-ALLOW-CACHE:YES
 #EXT-X-PLAYLIST-TYPE:VOD
 #EXT-X-VERSION:3
-#EXT-X-INDEPENDENT-SEGMENTS
 #EXT-X-MEDIA-SEQUENCE:1
 #EXT-X-DISCONTINUITY
 #EXTINF:3.000,
@@ -96,7 +109,7 @@ This open source project is maintained by Eyevinn Technology.
 
 ## Contributors
 
-- Jonas Rydholm Birmé (jonas.birme@eyevinn.se)
+- Jonas Rydholm Birme (jonas.birme@eyevinn.se)
 
 ## Attributions
 
@@ -106,7 +119,7 @@ A special thanks to [OTTera](http://ottera.tv) for funding the start of this pro
 
 # [Contributing](CONTRIBUTING.md)
 
-In addition to contributing code, you can help to triage issues. This can include reproducing bug reports, or asking for vital information such as version numbers or reproduction instructions. 
+In addition to contributing code, you can help to triage issues. This can include reproducing bug reports, or asking for vital information such as version numbers or reproduction instructions.
 
 # License (MIT)
 
