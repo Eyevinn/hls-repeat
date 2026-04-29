@@ -1,5 +1,4 @@
 const m3u8 = require('@eyevinn/m3u8');
-const url = require('url');
 const fetch = require('node-fetch');
 
 class HLSRepeatVod {
@@ -33,7 +32,7 @@ class HLSRepeatVod {
           const streamItem = m3u.items.StreamItem[i];
           this.bandwiths.push(streamItem.get('bandwidth'));
 
-          const mediaManifestUrl = url.resolve(baseUrl, streamItem.get('uri'));
+          const mediaManifestUrl = new URL(streamItem.get('uri'), baseUrl).href;
           if (!m3u.items.MediaItem.find((mediaItem) => mediaItem.get("type") === "AUDIO" && mediaItem.get("uri") == streamItem.get("uri"))) {
             mediaManifestPromises.push(this._loadMediaManifest(mediaManifestUrl, streamItem.get("bandwidth"), _injectMediaManifest));
           }
@@ -72,7 +71,7 @@ class HLSRepeatVod {
                 }
               }
               if (audioUri) {
-                let audioManifestUrl = url.resolve(baseUrl, audioUri);
+                let audioManifestUrl = new URL(audioUri, baseUrl).href;
                 if (!audioGroups[audioGroupId]) {
                   audioGroups[audioGroupId] = {};
                 }
@@ -112,7 +111,7 @@ class HLSRepeatVod {
               let subtitleUri = subtitleGroupItems[j].attributes.attributes.uri;
               
               if (subtitleUri) {
-                let subtitleManifestUrl = url.resolve(baseUrl, subtitleUri);
+                let subtitleManifestUrl = new URL(subtitleUri, baseUrl).href;
                 if (!subtitleGroups[subtitleGroupId]) {
                   subtitleGroups[subtitleGroupId] = {};
                 }
